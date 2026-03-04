@@ -24,12 +24,26 @@ export default function App() {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      // Llamamos a nuestro propio backend en lugar de proxies públicos que fallan
-      const res = await fetch(`/api/mercados`);
+      // 1. Intentamos primero con nuestro propio backend
+      let res = await fetch(`/api/mercados`);
+      let jsonData;
 
-      if (!res.ok) throw new Error(`Error HTTP: ${res.status}`);
+      if (res.ok) {
+        jsonData = await res.json();
+      } else {
+        // 2. PLAN B: Si el backend no existe (Error 404 en Vercel estático), 
+        // usamos un proxy público como fallback automático.
+        const urlAmbito = 'https://mercados.ambito.com/home/general';
+        const fallbackRes = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(urlAmbito)}`);
+        
+        if (!fallbackRes.ok) throw new Error(`Error en el fallback: ${fallbackRes.status}`);
+        
+        const wrapper = await fallbackRes.json();
+        if (!wrapper.contents) throw new Error("El proxy fallback no devolvió datos");
+        
+        jsonData = JSON.parse(wrapper.contents);
+      }
 
-      const jsonData = await res.json();
       if (!Array.isArray(jsonData)) throw new Error('Respuesta inválida');
 
       const processedData = jsonData
