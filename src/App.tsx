@@ -72,7 +72,9 @@ export default function App() {
   return (
     <div className="min-h-screen bg-[#f4f7f6] p-5 flex flex-col items-center font-sans">
       <div className="text-center mb-6 w-full max-w-4xl">
-        <h1 className="text-3xl font-bold text-gray-800 mb-4">COTIZACIONES versión A.B</h1>
+        <h1 className="text-2xl font-bold text-gray-800 mb-4">
+          COTIZACIONES <span className="text-xs font-normal text-gray-500 ml-1">versión A.B</span>
+        </h1>
         <button
           onClick={fetchData}
           disabled={loading}
@@ -87,7 +89,7 @@ export default function App() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full max-w-5xl">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 w-full max-w-6xl">
         {data.map((item) => {
           const isUp = item['class-variacion']?.includes('up');
           const isDown = item['class-variacion']?.includes('down');
@@ -99,17 +101,17 @@ export default function App() {
           return (
             <div
               key={item.idLimpio}
-              className={`rounded-xl p-5 shadow-sm border-t-4 transition-colors duration-500 ${
+              className={`rounded-lg p-3 shadow-sm border-t-2 transition-colors duration-500 ${
                 item.huboCambio ? 'bg-[#fff9c4] border-orange-500' : 'bg-white border-[#0056b3]'
               }`}
             >
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-xs font-bold text-gray-500 uppercase">{item.nombre}</span>
-                <span className={`text-xs font-bold py-0.5 px-2 rounded ${varClass}`}>
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-[10px] font-bold text-gray-500 uppercase truncate mr-1">{item.nombre}</span>
+                <span className={`text-[10px] font-bold py-0.5 px-1.5 rounded shrink-0 ${varClass}`}>
                   {item.variacion || '0,00%'}
                 </span>
               </div>
-              <div className="text-3xl font-extrabold my-2 text-gray-900">
+              <div className="text-xl font-extrabold my-1 text-gray-900 truncate">
                 {item.nombre.includes('Dólar') ? '$' + item.valorActual : item.valorActual}
               </div>
               {item.huboCambio && (
