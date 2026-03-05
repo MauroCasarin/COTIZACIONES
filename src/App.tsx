@@ -65,7 +65,7 @@ export default function App() {
       setStatusMsg(`Sincronizado • ${new Date().toLocaleTimeString()}`);
 
       if (timerRef.current) clearTimeout(timerRef.current);
-      timerRef.current = setTimeout(fetchData, 60000);
+      timerRef.current = setTimeout(fetchData, 600000);
     } catch (error) {
       console.error('Fallo en la revisión:', error);
       setStatusMsg("Error de conexión. Reintentando en 10s...");
@@ -87,7 +87,7 @@ export default function App() {
     <div className="min-h-screen bg-[#f4f7f6] p-5 flex flex-col items-center font-sans">
       <div className="text-center mb-6 w-full max-w-4xl">
         <h1 className="text-2xl font-bold text-gray-800 mb-4">
-          COTIZACIONES <span className="text-xs font-normal text-gray-500 ml-1">versión A.B</span>
+          COTIZACIONES <span className="text-xs font-normal text-gray-500 ml-1">versión A.B-10</span>
         </h1>
         <button
           onClick={fetchData}
