@@ -18,6 +18,7 @@ export default function App() {
   const [data, setData] = useState<FinancialItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [statusMsg, setStatusMsg] = useState('Conectando...');
+  const [countdown, setCountdown] = useState<number | null>(null);
   const memoriaValores = useRef<Record<string, string>>({});
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -63,14 +64,17 @@ export default function App() {
 
       setData(processedData);
       setStatusMsg(`Sincronizado • ${new Date().toLocaleTimeString()}`);
+      setCountdown(600); // 10 minutos
 
       if (timerRef.current) clearTimeout(timerRef.current);
       timerRef.current = setTimeout(fetchData, 600000);
     } catch (error) {
       console.error('Fallo en la revisión:', error);
-      setStatusMsg("Error de conexión. Reintentando en 10s...");
+      setStatusMsg("Error de conexión. Reintentando en 60s...");
+      setCountdown(60); // 60 segundos para reintento
+
       if (timerRef.current) clearTimeout(timerRef.current);
-      timerRef.current = setTimeout(fetchData, 10000);
+      timerRef.current = setTimeout(fetchData, 60000);
     } finally {
       setLoading(false);
     }
@@ -82,6 +86,22 @@ export default function App() {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
   }, [fetchData]);
+
+  useEffect(() => {
+    if (countdown === null || countdown <= 0) return;
+
+    const interval = setInterval(() => {
+      setCountdown((prev) => (prev !== null && prev > 0 ? prev - 1 : 0));
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [countdown]);
+
+  const formatCountdown = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
 
   return (
     <div className="min-h-screen bg-[#f4f7f6] p-5 flex flex-col items-center font-sans">
@@ -99,6 +119,11 @@ export default function App() {
         <div>
           <span className="text-sm text-gray-600 bg-white py-2 px-5 rounded-full border border-gray-300 inline-block">
             {statusMsg}
+            {countdown !== null && countdown > 0 && (
+              <span className="ml-2 font-mono text-blue-600 border-l pl-2 border-gray-200">
+                Próxima: {formatCountdown(countdown)}
+              </span>
+            )}
           </span>
         </div>
       </div>
