@@ -27,47 +27,42 @@ export default function App() {
     try {
       const urlAmbito = 'https://mercados.ambito.com/home/general';
       let jsonData;
-
-      // 1. Intentamos primero con nuestro propio backend (solo si no estamos en Vercel/Producción estática)
-      // O simplemente intentamos y capturamos el error silenciosamente
-      const isVercel = window.location.hostname.includes('vercel.app');
-      
       let success = false;
-      
-      if (!isVercel) {
-        try {
-          const res = await fetch(`/api/mercados`);
-          if (res.ok) {
-            jsonData = await res.json();
-            success = true;
-          }
-        } catch (e) {
-          console.warn("Backend local no disponible, usando fallback...");
+
+      // 1. Intentamos con nuestro propio backend (Ahora compatible con Vercel via /api/mercados.ts)
+      try {
+        const res = await fetch(`/api/mercados?t=${Date.now()}`);
+        if (res.ok) {
+          jsonData = await res.json();
+          if (Array.isArray(jsonData)) success = true;
         }
+      } catch (e) {
+        console.warn("Backend no disponible, intentando proxies...");
       }
 
       if (!success) {
-        // 2. PLAN B: Proxy Fallback 1 (AllOrigins)
+        // 2. PLAN B: Proxy Fallback 1 (Codetabs - Muy confiable)
         try {
-          const fallbackRes = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(urlAmbito)}&timestamp=${Date.now()}`);
+          const fallbackRes = await fetch(`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(urlAmbito)}`);
           if (fallbackRes.ok) {
-            const wrapper = await fallbackRes.json();
-            if (wrapper.contents) {
-              jsonData = JSON.parse(wrapper.contents);
-              success = true;
-            }
+            jsonData = await fallbackRes.json();
+            if (Array.isArray(jsonData)) success = true;
           }
         } catch (e) {
-          console.warn("Fallback 1 falló, intentando Fallback 2...");
+          console.warn("Fallback 1 falló...");
         }
       }
 
       if (!success) {
-        // 3. PLAN C: Proxy Fallback 2 (Corsproxy.io)
-        const fallbackRes2 = await fetch(`https://corsproxy.io/?${encodeURIComponent(urlAmbito)}`);
-        if (fallbackRes2.ok) {
-          jsonData = await fallbackRes2.json();
-          success = true;
+        // 3. PLAN C: Proxy Fallback 2 (AllOrigins Raw)
+        try {
+          const fallbackRes = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(urlAmbito)}`);
+          if (fallbackRes.ok) {
+            jsonData = await fallbackRes.json();
+            if (Array.isArray(jsonData)) success = true;
+          }
+        } catch (e) {
+          console.warn("Fallback 2 falló...");
         }
       }
 
